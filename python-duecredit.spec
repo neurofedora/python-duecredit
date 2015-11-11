@@ -99,16 +99,40 @@ export LC_ALL=en_US.UTF-8
 %py2_install
 %py3_install
 
+# Rename binaries
+pushd %{buildroot}%{_bindir}
+  mv %{modname} python3-%{modname}
+  sed -i '1s|^.*$|#!/usr/bin/env %{__python3}|' python3-%{modname}
+  for i in %{modname} %{modname}-3 %{modname}-%{python3_version}
+  do
+    ln -s python3-%{modname} $i
+  done
+
+  cp python3-%{modname} python2-%{modname}
+  sed -i '1s|^.*$|#!/usr/bin/env %{__python2}|' python2-%{modname}
+  for i in %{modname}-2 %{modname}-%{python2_version}
+  do
+    ln -s python2-%{modname} $i
+  done
+popd
+
 %check
 nosetests-%{python2_version} -v
 nosetests-%{python3_version} -v
 
 %files -n python2-%{modname}
 %license LICENSE
+%{_bindir}/python2-%{modname}
+%{_bindir}/%{modname}-2
+%{_bindir}/%{modname}-%{python2_version}
 %{python2_sitelib}/%{modname}*
 
 %files -n python3-%{modname}
 %license LICENSE
+%{_bindir}/%{modname}
+%{_bindir}/python3-%{modname}
+%{_bindir}/%{modname}-3
+%{_bindir}/%{modname}-%{python3_version}
 %{python3_sitelib}/%{modname}*
 
 %changelog
